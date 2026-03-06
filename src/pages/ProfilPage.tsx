@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   User,
   Bell,
@@ -8,6 +9,7 @@ import {
   ChevronRight,
   Heart,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 
 const menuItems = [
@@ -18,6 +20,14 @@ const menuItems = [
 ];
 
 const ProfilPage = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen pb-24 max-w-[430px] mx-auto">
       <div className="px-5 pt-6 pb-2">
@@ -35,9 +45,9 @@ const ProfilPage = () => {
             <User size={28} className="text-primary" />
           </div>
           <div>
-            <p className="font-bold text-foreground text-lg">Utilisateur</p>
+            <p className="font-bold text-foreground text-lg">{user?.name || "Utilisateur"}</p>
             <p className="text-sm text-muted-foreground">
-              Membre depuis mars 2026
+              {user?.email}
             </p>
           </div>
         </motion.div>
@@ -73,7 +83,7 @@ const ProfilPage = () => {
           {menuItems.map((item, i) => (
             <button
               key={i}
-              className="w-full flex items-center gap-3.5 px-5 py-4 border-b border-border/30 last:border-b-0 text-left"
+              className="w-full flex items-center gap-3.5 px-5 py-4 border-b border-border/30 last:border-b-0 text-left hover:bg-accent/50 transition-colors"
             >
               <item.icon size={18} className="text-primary" />
               <div className="flex-1">
@@ -95,7 +105,8 @@ const ProfilPage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-destructive/10 text-destructive font-medium text-sm"
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-destructive/10 text-destructive font-medium text-sm hover:bg-destructive/20 transition-colors"
         >
           <LogOut size={16} />
           Se déconnecter
