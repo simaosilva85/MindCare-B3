@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mindcareGradient" x1="96" y1="76" x2="430" y2="464" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5C5CFF"/>
+      <stop offset="1" stop-color="#4B4BDB"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="224" fill="url(#mindcareGradient)"/>
+  <path d="M131.5 291.5C145.5 266.5 183.5 211.5 208.5 205C233.5 198.5 225 245.5 246.5 257.5C268 269.5 306 182.5 338 175.5C370 168.5 372.5 206 358.5 233C344.5 260 316 329.5 292.5 337C269 344.5 267 301.5 244 294.5C221 287.5 182.5 354 152.5 355C122.5 356 117.5 316.5 131.5 291.5Z" fill="#F2F2F7"/>
+</svg>
