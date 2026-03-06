@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Sparkles } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Message {
@@ -75,7 +75,11 @@ const ChatPage = () => {
         </button>
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sparkles size={18} className="text-primary" />
+            <img
+              src="/mindcare-logo.svg"
+              alt="Logo Mind Care"
+              className="w-7 h-7 rounded-full"
+            />
           </div>
           <div>
             <p className="text-sm font-bold text-foreground">MindCare</p>
