@@ -3,12 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-}
+import { useChat } from "@/hooks/useChat";
 
 const quickPrompts = [
   "Je me sens stressé(e)",
@@ -20,16 +15,8 @@ const quickPrompts = [
 
 const ChatPage = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "Salut 👋 Je suis là pour toi. Comment tu te sens en ce moment ? Tu peux me dire ce qui te passe par la tête, ou choisir une suggestion en dessous.",
-    },
-  ]);
+  const { messages, isTyping, sendMessage } = useChat();
   const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,32 +26,10 @@ const ChatPage = () => {
     });
   }, [messages, isTyping]);
 
-  const sendMessage = (text: string) => {
+  const handleSend = (text: string) => {
     if (!text.trim()) return;
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: text.trim(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
+    sendMessage(text);
     setInput("");
-    setIsTyping(true);
-
-    // Simulated AI response (will be replaced with real API)
-    setTimeout(() => {
-      const responses = [
-        "Je comprends ce que tu ressens. C'est normal de se sentir comme ça parfois. Prends une grande respiration avec moi. 🌿\n\nEst-ce que tu veux qu'on en parle un peu plus, ou tu préfères un petit exercice pour te calmer ?",
-        "Merci de partager ça avec moi. Ce que tu vis est valide. Tu n'as pas besoin d'avoir toutes les réponses maintenant.\n\nUne chose simple que tu peux essayer : ferme les yeux 10 secondes et respire profondément. Comment tu te sens après ?",
-        "Je suis là pour toi, sans jugement. 💛 Parfois, juste mettre des mots sur ce qu'on ressent aide déjà un peu.\n\nQu'est-ce qui te pèse le plus en ce moment ?",
-      ];
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1500);
   };
 
   return (
@@ -142,7 +107,7 @@ const ChatPage = () => {
             {quickPrompts.map((prompt) => (
               <button
                 key={prompt}
-                onClick={() => sendMessage(prompt)}
+                onClick={() => handleSend(prompt)}
                 className="bg-lavender text-foreground text-xs font-medium px-3.5 py-2 rounded-full transition-all active:scale-95"
               >
                 {prompt}
@@ -162,7 +127,7 @@ const ChatPage = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  sendMessage(input);
+                  handleSend(input);
                 }
               }}
               placeholder="Écris ce que tu ressens..."
@@ -172,7 +137,7 @@ const ChatPage = () => {
           </div>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => sendMessage(input)}
+            onClick={() => handleSend(input)}
             disabled={!input.trim()}
             className="w-11 h-11 rounded-2xl bg-primary flex items-center justify-center disabled:opacity-40 transition-opacity"
           >
