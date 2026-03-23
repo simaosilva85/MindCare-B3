@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:5001/api/auth";
+const API_URL = import.meta.env.PROD
+  ? "https://mindcare-b3.onrender.com/api/auth"
+  : "http://localhost:5001/api/auth";
 
 interface AuthResponse {
   token: string;
