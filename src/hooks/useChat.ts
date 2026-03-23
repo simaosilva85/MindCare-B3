@@ -87,17 +87,20 @@ export function useChat() {
       // Save after each AI response
       const token = getToken();
       if (token) {
-        const allMessages = [...messagesRef.current, userMsg, aiMsg].filter((m) => m.id !== "1");
-        fetch(`${API_BASE}/chat-history`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
-          }),
-        }).catch(() => {});
+        setMessages((prev) => {
+          const toSave = prev.filter((m) => m.id !== "1");
+          fetch(`${API_BASE}/chat-history`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              messages: toSave.map((m) => ({ role: m.role, content: m.content })),
+            }),
+          }).catch(() => {});
+          return prev;
+        });
       }
     } catch (err) {
       const errorMessage =
