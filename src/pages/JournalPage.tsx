@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface JournalEntry {
   id: string;
@@ -63,13 +64,16 @@ const JournalPage = () => {
           </button>
           <h1 className="text-xl font-bold text-foreground">Mon journal</h1>
         </div>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowNew(true)}
-          className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
-        >
-          <Plus size={20} className="text-primary-foreground" />
-        </motion.button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowNew(true)}
+            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
+          >
+            <Plus size={20} className="text-primary-foreground" />
+          </motion.button>
+        </div>
       </div>
 
       {/* New entry */}

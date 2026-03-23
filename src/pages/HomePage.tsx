@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Wind, BookOpen, Sparkles, Sun } from "lucide-react";
+import { MessageCircle, Wind, BookOpen, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MoodSelector from "@/components/MoodSelector";
 import BottomNav from "@/components/BottomNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const tips = [
   "Prends une grande respiration. Tu mérites ce moment de pause. 🌿",
@@ -37,9 +38,7 @@ const HomePage = () => {
               Comment tu vas ?
             </h1>
           </div>
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Sun size={20} className="text-primary" />
-          </div>
+          <ThemeToggle />
         </motion.div>
       </div>
 

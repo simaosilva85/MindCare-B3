@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, Pause, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const exercises = [
   { id: "calm", name: "Respiration calme", duration: 60, inhale: 4, hold: 4, exhale: 4 },
@@ -56,11 +57,14 @@ const BreathingPage = () => {
   return (
     <div className="min-h-screen flex flex-col max-w-[430px] mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-6 pb-4">
-        <button onClick={() => navigate(-1)} className="p-1">
-          <ArrowLeft size={22} className="text-foreground" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">Respiration</h1>
+      <div className="flex items-center justify-between px-5 pt-6 pb-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1">
+            <ArrowLeft size={22} className="text-foreground" />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">Respiration</h1>
+        </div>
+        <ThemeToggle />
       </div>
 
       {/* Exercise selector */}

@@ -4,6 +4,7 @@ import { TrendingUp, Calendar, BookOpen, Plus } from "lucide-react";
 import MoodSelector from "@/components/MoodSelector";
 import BottomNav from "@/components/BottomNav";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const moodHistory = [
   { day: "Lun", emoji: "😊", value: 4 },
@@ -21,11 +22,14 @@ const SuiviPage = () => {
 
   return (
     <div className="min-h-screen pb-24 max-w-[430px] mx-auto">
-      <div className="px-5 pt-6 pb-2">
-        <h1 className="text-2xl font-bold text-foreground">Ton suivi</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Observe tes tendances et prends soin de toi
-        </p>
+      <div className="px-5 pt-6 pb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Ton suivi</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Observe tes tendances et prends soin de toi
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="px-5 space-y-5 mt-4">

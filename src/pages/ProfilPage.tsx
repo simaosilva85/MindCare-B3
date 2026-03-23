@@ -8,11 +8,14 @@ import {
   LogOut,
   ChevronRight,
   Heart,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const menuItems = [
+  { icon: Palette, label: "Thème", sub: "Mode clair / sombre", action: "theme" },
   { icon: Bell, label: "Notifications", sub: "Rappels doux" },
   { icon: Shield, label: "Confidentialité", sub: "Tes données sont protégées" },
   { icon: FileText, label: "Mentions légales", sub: "" },
@@ -94,7 +97,11 @@ const ProfilPage = () => {
                   <p className="text-xs text-muted-foreground">{item.sub}</p>
                 )}
               </div>
-              <ChevronRight size={16} className="text-muted-foreground" />
+              {item.action === "theme" ? (
+                <ThemeToggle />
+              ) : (
+                <ChevronRight size={16} className="text-muted-foreground" />
+              )}
             </button>
           ))}
         </motion.div>

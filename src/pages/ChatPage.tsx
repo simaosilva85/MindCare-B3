@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Message {
   id: string;
@@ -69,25 +70,28 @@ const ChatPage = () => {
   return (
     <div className="h-screen flex flex-col max-w-[430px] mx-auto bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-card/80 backdrop-blur-xl border-b border-border/50">
-        <button onClick={() => navigate(-1)} className="p-1">
-          <ArrowLeft size={22} className="text-foreground" />
-        </button>
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <img
-              src="/mindcare-logo.svg"
-              alt="Logo Mind Care"
-              className="w-7 h-7 rounded-full"
-            />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-foreground">MindCare</p>
-            <p className="text-xs text-muted-foreground">
-              Ton compagnon bien-être
-            </p>
+      <div className="flex items-center justify-between px-4 py-3 bg-card/80 backdrop-blur-xl border-b border-border/50">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1">
+            <ArrowLeft size={22} className="text-foreground" />
+          </button>
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <img
+                src="/mindcare-logo.svg"
+                alt="Logo Mind Care"
+                className="w-7 h-7 rounded-full"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">MindCare</p>
+              <p className="text-xs text-muted-foreground">
+                Ton compagnon bien-être
+              </p>
+            </div>
           </div>
         </div>
+        <ThemeToggle />
       </div>
 
       {/* Messages */}
