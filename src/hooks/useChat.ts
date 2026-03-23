@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
-import { sendMessageToAI, startNewChat, resetChat } from "@/services/chatService";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { sendMessageToAI, startNewChat, resetChat, loadHistory } from "@/services/chatService";
+import { getToken } from "@/services/authService";
 
 interface Message {
   id: string;
@@ -14,17 +15,52 @@ const WELCOME_MESSAGE: Message = {
     "Salut 👋 Je suis là pour toi. Comment tu te sens en ce moment ? Tu peux me dire ce qui te passe par la tête, ou choisir une suggestion en dessous.",
 };
 
+const API_BASE = import.meta.env.PROD
+  ? "https://mindcare-b3.onrender.com/api"
+  : "http://localhost:5001/api";
+
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const messagesRef = useRef<Message[]>([WELCOME_MESSAGE]);
 
+  // Keep ref in sync
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Load chat history on mount
   useEffect(() => {
     startNewChat();
+
+    const token = getToken();
+    if (token) {
+      fetch(`${API_BASE}/chat-history`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.messages && data.messages.length > 0) {
+            const loaded: Message[] = data.messages.map((m: any, i: number) => ({
+              id: (i + 1).toString(),
+              role: m.role,
+              content: m.content,
+            }));
+            // Restore Gemini conversation history
+            loadHistory(loaded);
+            setMessages([WELCOME_MESSAGE, ...loaded]);
+          }
+        })
+        .catch(() => {});
+    }
+
     return () => {
       resetChat();
     };
   }, []);
+
+  // No beforeunload needed — chat is saved after each AI response
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
@@ -47,6 +83,22 @@ export function useChat() {
         content: response,
       };
       setMessages((prev) => [...prev, aiMsg]);
+
+      // Save after each AI response
+      const token = getToken();
+      if (token) {
+        const allMessages = [...messagesRef.current, userMsg, aiMsg].filter((m) => m.id !== "1");
+        fetch(`${API_BASE}/chat-history`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            messages: allMessages.map((m) => ({ role: m.role, content: m.content })),
+          }),
+        }).catch(() => {});
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Une erreur est survenue";

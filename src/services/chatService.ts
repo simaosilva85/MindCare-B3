@@ -8,6 +8,13 @@ export function startNewChat(): void {
   conversationHistory = [];
 }
 
+export function loadHistory(messages: Array<{ role: "user" | "assistant"; content: string }>): void {
+  conversationHistory = messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+}
+
 export async function sendMessageToAI(message: string): Promise<string> {
   conversationHistory.push({
     role: "user",
