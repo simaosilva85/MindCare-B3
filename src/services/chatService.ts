@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = "AIzaSyDmQ9XhsXVzXobTsfRoBmYHDX2L9FsZI3s";
+const ai = new GoogleGenAI({ apiKey: "AIzaSyDmQ9XhsXVzXobTsfRoBmYHDX2L9FsZI3s" });
 
 const SYSTEM_INSTRUCTION = `Tu es MindCare, un compagnon bienveillant de bien-être mental pour les jeunes.
 
@@ -14,32 +14,19 @@ Règles importantes :
 - Ne pose pas de diagnostic. Tu es un espace d'écoute et de soutien.
 - Tu peux utiliser des emojis avec modération pour rendre la conversation plus chaleureuse.`;
 
-let ai: GoogleGenAI | null = null;
 let conversationHistory: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
-
-function getAI(): GoogleGenAI {
-  if (!ai) {
-    if (!API_KEY) {
-      throw new Error("Clé API Gemini manquante. Ajoute VITE_GEMINI_API_KEY dans .env.local");
-    }
-    ai = new GoogleGenAI({ apiKey: API_KEY });
-  }
-  return ai;
-}
 
 export function startNewChat(): void {
   conversationHistory = [];
 }
 
 export async function sendMessageToAI(message: string): Promise<string> {
-  const client = getAI();
-
   conversationHistory.push({
     role: "user",
     parts: [{ text: message }],
   });
 
-  const response = await client.models.generateContent({
+  const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: conversationHistory,
     config: {
@@ -59,5 +46,4 @@ export async function sendMessageToAI(message: string): Promise<string> {
 
 export function resetChat(): void {
   conversationHistory = [];
-  ai = null;
 }
