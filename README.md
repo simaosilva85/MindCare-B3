@@ -32,7 +32,6 @@ MindCare est une plateforme complète qui aide les utilisateurs à prendre soin 
 
 - [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/) - Serveur et API REST
 - [MongoDB](https://www.mongodb.com/) - Base de données NoSQL (via Mongoose)
-- [Auth0](https://auth0.com/) - Gestion des identités et de l'authentification _(en cours d'intégration)_
 
 ---
 
