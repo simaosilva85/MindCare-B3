@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI, type ChatSession } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = import.meta.env.VITE_XAI_API_KEY;
 
-const SYSTEM_INSTRUCTION = `Tu es MindCare, un compagnon bienveillant de bien-être mental pour les jeunes.
+const SYSTEM_PROMPT = `Tu es MindCare, un compagnon bienveillant de bien-être mental pour les jeunes.
 
 Règles importantes :
 - Réponds toujours en français.
@@ -14,43 +14,49 @@ Règles importantes :
 - Ne pose pas de diagnostic. Tu es un espace d'écoute et de soutien.
 - Tu peux utiliser des emojis avec modération pour rendre la conversation plus chaleureuse.`;
 
-let genAI: GoogleGenerativeAI | null = null;
-let chatSession: ChatSession | null = null;
+let client: OpenAI | null = null;
+let conversationHistory: OpenAI.Chat.ChatCompletionMessageParam[] = [];
 
-function getGenAI(): GoogleGenerativeAI {
-  if (!genAI) {
-    if (!API_KEY || API_KEY === "YOUR_GOOGLE_API_KEY_HERE") {
-      throw new Error(
-        "Clé API Gemini manquante. Ajoute VITE_GEMINI_API_KEY dans .env.local"
-      );
+function getClient(): OpenAI {
+  if (!client) {
+    if (!API_KEY) {
+      throw new Error("Clé API xAI manquante. Ajoute VITE_XAI_API_KEY dans .env.local");
     }
-    genAI = new GoogleGenerativeAI(API_KEY);
+    client = new OpenAI({
+      apiKey: API_KEY,
+      baseURL: "https://api.x.ai/v1",
+      dangerouslyAllowBrowser: true,
+    });
   }
-  return genAI;
+  return client;
 }
 
 export function startNewChat(): void {
-  const ai = getGenAI();
-  const model = ai.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    systemInstruction: SYSTEM_INSTRUCTION,
-  });
-
-  chatSession = model.startChat({
-    history: [],
-  });
+  conversationHistory = [
+    { role: "system", content: SYSTEM_PROMPT },
+  ];
 }
 
 export async function sendMessageToAI(message: string): Promise<string> {
-  if (!chatSession) {
+  if (conversationHistory.length === 0) {
     startNewChat();
   }
 
-  const result = await chatSession!.sendMessage(message);
-  const response = result.response;
-  return response.text();
+  conversationHistory.push({ role: "user", content: message });
+
+  const openai = getClient();
+  const response = await openai.chat.completions.create({
+    model: "grok-3-mini-fast",
+    messages: conversationHistory,
+  });
+
+  const assistantMessage = response.choices[0]?.message?.content ?? "";
+  conversationHistory.push({ role: "assistant", content: assistantMessage });
+
+  return assistantMessage;
 }
 
 export function resetChat(): void {
-  chatSession = null;
+  conversationHistory = [];
+  client = null;
 }
