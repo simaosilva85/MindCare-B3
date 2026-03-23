@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const API_KEY = "AIzaSyDmQ9XhsXVzXobTsfRoBmYHDX2L9FsZI3s";
 
 const SYSTEM_INSTRUCTION = `Tu es MindCare, un compagnon bienveillant de bien-être mental pour les jeunes.
 
