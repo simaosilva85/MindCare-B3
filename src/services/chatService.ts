@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, type ChatSession } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -14,31 +14,50 @@ Règles importantes :
 - Ne pose pas de diagnostic. Tu es un espace d'écoute et de soutien.
 - Tu peux utiliser des emojis avec modération pour rendre la conversation plus chaleureuse.`;
 
-let chatSession: ChatSession | null = null;
+let ai: GoogleGenAI | null = null;
+let conversationHistory: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [];
+
+function getAI(): GoogleGenAI {
+  if (!ai) {
+    if (!API_KEY) {
+      throw new Error("Clé API Gemini manquante. Ajoute VITE_GEMINI_API_KEY dans .env.local");
+    }
+    ai = new GoogleGenAI({ apiKey: API_KEY });
+  }
+  return ai;
+}
 
 export function startNewChat(): void {
-  if (!API_KEY) {
-    throw new Error("Clé API Gemini manquante. Ajoute VITE_GEMINI_API_KEY dans .env.local");
-  }
-
-  const genAI = new GoogleGenerativeAI(API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    systemInstruction: SYSTEM_INSTRUCTION,
-  });
-
-  chatSession = model.startChat({ history: [] });
+  conversationHistory = [];
 }
 
 export async function sendMessageToAI(message: string): Promise<string> {
-  if (!chatSession) {
-    startNewChat();
-  }
+  const client = getAI();
 
-  const result = await chatSession!.sendMessage(message);
-  return result.response.text();
+  conversationHistory.push({
+    role: "user",
+    parts: [{ text: message }],
+  });
+
+  const response = await client.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: conversationHistory,
+    config: {
+      systemInstruction: SYSTEM_INSTRUCTION,
+    },
+  });
+
+  const text = response.text ?? "";
+
+  conversationHistory.push({
+    role: "model",
+    parts: [{ text }],
+  });
+
+  return text;
 }
 
 export function resetChat(): void {
-  chatSession = null;
+  conversationHistory = [];
+  ai = null;
 }
