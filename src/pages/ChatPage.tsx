@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useChat } from "@/hooks/useChat";
+import { useVoice } from "@/hooks/useVoice";
 
 const quickPrompts = [
   "Je me sens stressé(e)",
@@ -16,8 +17,11 @@ const quickPrompts = [
 const ChatPage = () => {
   const navigate = useNavigate();
   const { messages, isTyping, sendMessage } = useChat();
+  const { isListening, isSpeaking, startListening, stopListening, speak, stopSpeaking, isSupported } = useVoice();
   const [input, setInput] = useState("");
+  const [voiceMode, setVoiceMode] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastSpokenIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -26,10 +30,50 @@ const ChatPage = () => {
     });
   }, [messages, isTyping]);
 
+  // Auto-speak new AI messages when voice mode is ON
+  useEffect(() => {
+    if (!voiceMode || messages.length === 0) return;
+
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role === "assistant" && lastMsg.id !== lastSpokenIdRef.current) {
+      lastSpokenIdRef.current = lastMsg.id;
+      speak(lastMsg.content, () => {
+        // After AI finishes speaking, auto-listen for next user input
+        startListening((text) => {
+          handleSend(text);
+        });
+      });
+    }
+  }, [messages, voiceMode]);
+
   const handleSend = (text: string) => {
     if (!text.trim()) return;
     sendMessage(text);
     setInput("");
+  };
+
+  const handleMic = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening((text) => {
+        handleSend(text);
+      });
+    }
+  };
+
+  const toggleVoiceMode = () => {
+    if (voiceMode) {
+      setVoiceMode(false);
+      stopSpeaking();
+      stopListening();
+    } else {
+      setVoiceMode(true);
+      // Start listening immediately
+      startListening((text) => {
+        handleSend(text);
+      });
+    }
   };
 
   return (
@@ -51,13 +95,43 @@ const ChatPage = () => {
             <div>
               <p className="text-sm font-bold text-foreground">MindCare</p>
               <p className="text-xs text-muted-foreground">
-                Ton compagnon bien-être
+                {voiceMode ? "Mode vocal activé" : "Ton compagnon bien-être"}
               </p>
             </div>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          {isSupported && (
+            <button
+              onClick={toggleVoiceMode}
+              className={`p-2 rounded-full transition-colors ${
+                voiceMode ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+              }`}
+            >
+              {voiceMode ? <Volume2 size={20} /> : <VolumeX size={20} />}
+            </button>
+          )}
+          <ThemeToggle />
+        </div>
       </div>
+
+      {/* Voice mode banner */}
+      {voiceMode && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="bg-primary/10 px-4 py-2 text-center text-xs text-primary font-medium"
+        >
+          {isSpeaking
+            ? "🔊 MindCare parle..."
+            : isListening
+              ? "🎙️ Je t'écoute, parle..."
+              : isTyping
+                ? "💭 MindCare réfléchit..."
+                : "🎙️ Appuie sur le micro ou parle"}
+        </motion.div>
+      )}
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -77,6 +151,15 @@ const ChatPage = () => {
                 }`}
               >
                 {msg.content}
+                {msg.role === "assistant" && isSupported && !voiceMode && (
+                  <button
+                    onClick={() => isSpeaking ? stopSpeaking() : speak(msg.content)}
+                    className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Volume2 size={14} className={isSpeaking ? "text-primary animate-pulse" : ""} />
+                    {isSpeaking ? "Stop" : "Écouter"}
+                  </button>
+                )}
               </div>
             </motion.div>
           ))}
@@ -130,11 +213,24 @@ const ChatPage = () => {
                   handleSend(input);
                 }
               }}
-              placeholder="Écris ce que tu ressens..."
+              placeholder={isListening ? "Parle, je t'écoute..." : "Écris ce que tu ressens..."}
               rows={1}
               className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none max-h-24"
             />
           </div>
+          {isSupported && (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleMic}
+              className="w-11 h-11 rounded-2xl flex items-center justify-center bg-transparent border border-border transition-colors"
+            >
+              {isListening ? (
+                <Mic size={18} className="text-primary" />
+              ) : (
+                <MicOff size={18} className="text-red-500" />
+              )}
+            </motion.button>
+          )}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => handleSend(input)}
