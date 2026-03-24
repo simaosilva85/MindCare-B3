@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { loginUser, registerUser, logoutUser, getStoredUser, getToken } from "@/services/authService";
+import { loginUser, registerUser, logoutUser, getStoredUser, getToken, updateProfile } from "@/services/authService";
 
 interface User {
   id: string;
@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
+  updateUser: (data: { name?: string; email?: string; password?: string }) => Promise<void>;
   isLoggedIn: boolean;
 }
 
@@ -55,6 +56,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = async (data: { name?: string; email?: string; password?: string }) => {
+    const result = await updateProfile(data);
+    setUser(result.user);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -63,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         signup,
         logout,
+        updateUser,
         isLoggedIn: user !== null,
       }}
     >

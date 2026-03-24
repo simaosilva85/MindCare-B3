@@ -54,3 +54,20 @@ export function getToken(): string | null {
 export function isAuthenticated(): boolean {
   return Boolean(getToken());
 }
+
+export async function updateProfile(data: { name?: string; email?: string; password?: string }): Promise<AuthResponse> {
+  const token = getToken();
+  const res = await fetch(`${API_URL}/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message);
+  localStorage.setItem("token", json.token);
+  localStorage.setItem("user", JSON.stringify(json.user));
+  return json;
+}

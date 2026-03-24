@@ -78,4 +78,34 @@ router.get("/me", async (req, res) => {
   }
 });
 
+// PUT /api/auth/profile (update name, email, password)
+router.put("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "Non authentifié" });
+    }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+
+    const { name, email, password } = req.body;
+    if (name) user.name = name;
+    if (email && email !== user.email) {
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ message: "Cet email est déjà utilisé" });
+      user.email = email;
+    }
+    if (password) user.password = password;
+
+    await user.save();
+
+    const newToken = generateToken(user._id);
+    res.json({ token: newToken, user: { id: user._id, name: user.name, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 export default router;

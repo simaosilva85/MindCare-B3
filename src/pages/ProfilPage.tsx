@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -10,6 +10,10 @@ import {
   ChevronRight,
   Heart,
   Palette,
+  Pencil,
+  X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
@@ -45,9 +49,15 @@ function computeStreak(dates: string[]): number {
 }
 
 const ProfilPage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ checkins: 0, streak: 0, notes: 0 });
+
+  const [showEdit, setShowEdit] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     Promise.all([getMoods(), getJournalEntries()]).then(([moods, journal]) => {
@@ -58,6 +68,37 @@ const ProfilPage = () => {
       });
     });
   }, []);
+
+  const openEdit = () => {
+    setForm({ name: user?.name || "", email: user?.email || "", password: "", confirmPassword: "" });
+    setEditError("");
+    setShowEdit(true);
+  };
+
+  const handleSave = async () => {
+    if (form.password && form.password !== form.confirmPassword) {
+      setEditError("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    if (form.password && form.password.length < 6) {
+      setEditError("Le mot de passe doit faire au moins 6 caractères.");
+      return;
+    }
+    setSaving(true);
+    setEditError("");
+    try {
+      const payload: { name?: string; email?: string; password?: string } = {};
+      if (form.name && form.name !== user?.name) payload.name = form.name;
+      if (form.email && form.email !== user?.email) payload.email = form.email;
+      if (form.password) payload.password = form.password;
+      if (Object.keys(payload).length > 0) await updateUser(payload);
+      setShowEdit(false);
+    } catch (e: unknown) {
+      setEditError(e instanceof Error ? e.message : "Une erreur est survenue.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -80,12 +121,16 @@ const ProfilPage = () => {
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
             <User size={28} className="text-primary" />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="font-bold text-foreground text-lg">{user?.name || "Utilisateur"}</p>
-            <p className="text-sm text-muted-foreground">
-              {user?.email}
-            </p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
+          <button
+            onClick={openEdit}
+            className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+          >
+            <Pencil size={15} className="text-primary" />
+          </button>
         </motion.div>
 
         {/* Stats */}
@@ -123,9 +168,7 @@ const ProfilPage = () => {
             >
               <item.icon size={18} className="text-primary" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">
-                  {item.label}
-                </p>
+                <p className="text-sm font-medium text-foreground">{item.label}</p>
                 {item.sub && (
                   <p className="text-xs text-muted-foreground">{item.sub}</p>
                 )}
@@ -158,6 +201,98 @@ const ProfilPage = () => {
       </div>
 
       <BottomNav />
+
+      {/* Edit modal */}
+      <AnimatePresence>
+        {showEdit && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-50"
+              onClick={() => setShowEdit(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-3xl p-6 max-w-[430px] mx-auto"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-foreground">Modifier le profil</h2>
+                <button onClick={() => setShowEdit(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-muted">
+                  <X size={16} className="text-muted-foreground" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Nom</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                    className="w-full rounded-xl bg-muted px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    className="w-full rounded-xl bg-muted px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Nouveau mot de passe <span className="text-muted-foreground/60">(optionnel)</span></label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                      placeholder="Laisser vide pour ne pas changer"
+                      className="w-full rounded-xl bg-muted px-4 py-3 pr-11 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                {form.password && (
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Confirmer le mot de passe</label>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.confirmPassword}
+                      onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                      className="w-full rounded-xl bg-muted px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40"
+                    />
+                  </div>
+                )}
+
+                {editError && (
+                  <p className="text-xs text-destructive">{editError}</p>
+                )}
+
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-60 transition-opacity"
+                >
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
