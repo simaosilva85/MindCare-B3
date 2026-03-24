@@ -5,7 +5,7 @@ const moods = [
   { emoji: "😐", label: "Bof", value: "neutral", color: "bg-lavender" },
   { emoji: "😔", label: "Triste", value: "sad", color: "bg-secondary" },
   { emoji: "😰", label: "Stressé", value: "stressed", color: "bg-peach" },
-  { emoji: "😡", label: "En colère", value: "angry", color: "bg-accent/20" },
+  { emoji: "😡", label: "Enervé", value: "angry", color: "bg-accent/20" },
 ];
 
 interface MoodSelectorProps {
