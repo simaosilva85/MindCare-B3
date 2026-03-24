@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   User,
   Bell,
@@ -13,6 +14,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import BottomNav from "@/components/BottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getJournalEntries } from "@/services/journalService";
+import { getMoods } from "@/services/moodService";
 
 const menuItems = [
   { icon: Palette, label: "Thème", sub: "Mode clair / sombre", action: "theme" },
@@ -22,9 +25,39 @@ const menuItems = [
   { icon: Heart, label: "À propos de MindCare", sub: "" },
 ];
 
+function computeStreak(dates: string[]): number {
+  if (dates.length === 0) return 0;
+  const sorted = [...new Set(dates)].sort((a, b) => (a > b ? -1 : 1));
+  const today = new Date().toISOString().split("T")[0];
+  let streak = 0;
+  let expected = today;
+  for (const date of sorted) {
+    if (date === expected) {
+      streak++;
+      const d = new Date(expected);
+      d.setDate(d.getDate() - 1);
+      expected = d.toISOString().split("T")[0];
+    } else if (date < expected) {
+      break;
+    }
+  }
+  return streak;
+}
+
 const ProfilPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ checkins: 0, streak: 0, notes: 0 });
+
+  useEffect(() => {
+    Promise.all([getMoods(), getJournalEntries()]).then(([moods, journal]) => {
+      setStats({
+        checkins: moods.length,
+        streak: computeStreak(moods.map((m) => m.date)),
+        notes: journal.length,
+      });
+    });
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -63,9 +96,9 @@ const ProfilPage = () => {
           className="grid grid-cols-3 gap-3"
         >
           {[
-            { value: "24", label: "Check-ins" },
-            { value: "5", label: "Jours streak" },
-            { value: "12", label: "Notes journal" },
+            { value: stats.checkins, label: "Check-ins" },
+            { value: stats.streak, label: "Jours streak" },
+            { value: stats.notes, label: "Notes journal" },
           ].map((s, i) => (
             <div key={i} className="bg-lavender rounded-2xl p-3.5 text-center">
               <p className="text-xl font-bold text-foreground">{s.value}</p>
