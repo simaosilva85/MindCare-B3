@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import chatRoutes from "./routes/chat.js";
 import chatHistoryRoutes from "./routes/chatHistory.js";
+import moodRoutes from "./routes/mood.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/chat-history", chatHistoryRoutes);
+app.use("/api/mood", moodRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
