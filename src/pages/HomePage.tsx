@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Wind, BookOpen, Sparkles } from "lucide-react";
+import { MessageCircle, Wind, BookOpen, Sparkles, Info, LifeBuoy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MoodSelector from "@/components/MoodSelector";
 import BottomNav from "@/components/BottomNav";
@@ -109,6 +109,39 @@ const HomePage = () => {
             </span>
             <span className="text-xs text-muted-foreground">
               Écrire tes pensées
+            </span>
+          </button>
+        </motion.div>
+
+        {/* À propos & Ressources */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="grid grid-cols-2 gap-3"
+        >
+          <button
+            onClick={() => navigate("/about")}
+            className="bg-card rounded-2xl p-4 flex flex-col items-start gap-2 shadow-sm"
+          >
+            <Info size={22} className="text-primary" />
+            <span className="text-sm font-semibold text-foreground">
+              À propos
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Découvrir MindCare
+            </span>
+          </button>
+          <button
+            onClick={() => navigate("/resources")}
+            className="bg-card rounded-2xl p-4 flex flex-col items-start gap-2 shadow-sm"
+          >
+            <LifeBuoy size={22} className="text-red-500" />
+            <span className="text-sm font-semibold text-foreground">
+              Ressources
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Aide & contacts
             </span>
           </button>
         </motion.div>

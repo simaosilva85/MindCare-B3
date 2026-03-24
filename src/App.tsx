@@ -14,6 +14,8 @@ import BreathingPage from "./pages/BreathingPage";
 import ProfilPage from "./pages/ProfilPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import AboutPage from "./pages/AboutPage";
+import ResourcesPage from "./pages/ResourcesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +58,8 @@ const AppRoutes = () => {
       <Route path="/journal" element={<PrivateRoute element={<JournalPage />} />} />
       <Route path="/respiration" element={<PrivateRoute element={<BreathingPage />} />} />
       <Route path="/profil" element={<PrivateRoute element={<ProfilPage />} />} />
+      <Route path="/about" element={<PrivateRoute element={<AboutPage />} />} />
+      <Route path="/resources" element={<PrivateRoute element={<ResourcesPage />} />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
