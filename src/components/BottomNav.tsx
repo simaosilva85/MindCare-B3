@@ -14,19 +14,19 @@ const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-xl border-t border-border/50 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around px-4 py-2 max-w-[430px] mx-auto">
+      <div className="relative flex items-center justify-around px-4 py-2 max-w-[430px] mx-auto">
         {tabs.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           return (
             <Link
               key={path}
               to={path}
-              className="flex flex-col items-center gap-0.5 py-1 px-3 relative"
+              className="flex flex-col items-center gap-0.5 pt-2 pb-1 px-3 relative"
             >
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-primary"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-primary"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
