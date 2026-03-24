@@ -28,13 +28,24 @@ const JournalPage = () => {
   const addEntry = async () => {
     if (!newContent.trim()) return;
     setSaving(true);
-    const created = await createJournalEntry(newMood, newContent.trim());
-    if (created) {
-      setEntries((prev) => [created, ...prev]);
-    }
+
+    // Optimistic update : affiche immédiatement
+    const tempEntry: JournalEntry = {
+      _id: Date.now().toString(),
+      mood: newMood,
+      content: newContent.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    setEntries((prev) => [tempEntry, ...prev]);
     setNewContent("");
     setNewMood("😊");
     setShowNew(false);
+
+    // Sauvegarde en base et remplace l'entrée temporaire par la vraie
+    const created = await createJournalEntry(newMood, tempEntry.content);
+    if (created) {
+      setEntries((prev) => prev.map((e) => (e._id === tempEntry._id ? created : e)));
+    }
     setSaving(false);
   };
 
