@@ -18,6 +18,10 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
 import AboutPage from "./pages/AboutPage";
 import ResourcesPage from "./pages/ResourcesPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ConfidentialitePage from "./pages/ConfidentialitePage";
+import MentionsLegalesPage from "./pages/MentionsLegalesPage";
+import AProposPage from "./pages/AProposPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,6 +79,10 @@ const AppRoutes = () => {
       <Route path="/profil" element={<PrivateRoute element={<ProfilPage />} />} />
       <Route path="/about" element={<PrivateRoute element={<AboutPage />} />} />
       <Route path="/resources" element={<PrivateRoute element={<ResourcesPage />} />} />
+      <Route path="/notifications" element={<PrivateRoute element={<NotificationsPage />} />} />
+      <Route path="/confidentialite" element={<PrivateRoute element={<ConfidentialitePage />} />} />
+      <Route path="/mentions-legales" element={<PrivateRoute element={<MentionsLegalesPage />} />} />
+      <Route path="/a-propos" element={<PrivateRoute element={<AProposPage />} />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
     </>

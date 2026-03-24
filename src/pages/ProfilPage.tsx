@@ -23,10 +23,10 @@ import { getMoods } from "@/services/moodService";
 
 const menuItems = [
   { icon: Palette, label: "Thème", sub: "Mode clair / sombre", action: "theme" },
-  { icon: Bell, label: "Notifications", sub: "Rappels doux" },
-  { icon: Shield, label: "Confidentialité", sub: "Tes données sont protégées" },
-  { icon: FileText, label: "Mentions légales", sub: "" },
-  { icon: Heart, label: "À propos de MindCare", sub: "" },
+  { icon: Bell, label: "Notifications", sub: "Rappels doux", path: "/notifications" },
+  { icon: Shield, label: "Confidentialité", sub: "Tes données sont protégées", path: "/confidentialite" },
+  { icon: FileText, label: "Mentions légales", sub: "", path: "/mentions-legales" },
+  { icon: Heart, label: "À propos de MindCare", sub: "", path: "/a-propos" },
 ];
 
 function computeStreak(dates: string[]): number {
@@ -164,6 +164,7 @@ const ProfilPage = () => {
           {menuItems.map((item, i) => (
             <button
               key={i}
+              onClick={() => item.path && navigate(item.path)}
               className="w-full flex items-center gap-3.5 px-5 py-4 border-b border-border/30 last:border-b-0 text-left hover:bg-accent/50 transition-colors"
             >
               <item.icon size={18} className="text-primary" />
