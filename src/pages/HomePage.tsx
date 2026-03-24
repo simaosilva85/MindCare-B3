@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, Wind, BookOpen, Sparkles, Info, LifeBuoy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import MoodSelector from "@/components/MoodSelector";
 import BottomNav from "@/components/BottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { saveMood, getMoods } from "@/services/moodService";
 
 const tips = [
   "Prends une grande respiration. Tu mérites ce moment de pause. 🌿",
@@ -20,6 +21,21 @@ const HomePage = () => {
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Bonjour" : hour < 18 ? "Bon après-midi" : "Bonsoir";
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Charger l'humeur du jour
+  useEffect(() => {
+    getMoods().then((entries) => {
+      const todayEntry = entries.find((e) => e.date === today);
+      if (todayEntry) setMood(todayEntry.mood);
+    });
+  }, []);
+
+  const handleMoodSelect = async (value: string) => {
+    setMood(value);
+    await saveMood(value);
+  };
 
   return (
     <div className="min-h-screen pb-24 max-w-[430px] mx-auto">
@@ -53,7 +69,7 @@ const HomePage = () => {
           <p className="text-sm font-semibold text-foreground mb-3">
             Comment tu te sens ?
           </p>
-          <MoodSelector selected={mood} onSelect={setMood} />
+          <MoodSelector selected={mood} onSelect={handleMoodSelect} />
         </motion.div>
 
         {/* Talk CTA */}

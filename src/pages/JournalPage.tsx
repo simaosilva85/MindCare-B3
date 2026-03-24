@@ -1,57 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Plus, X } from "lucide-react";
+import { ArrowLeft, Plus, X, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
-
-interface JournalEntry {
-  id: string;
-  date: string;
-  mood: string;
-  content: string;
-}
-
-const sampleEntries: JournalEntry[] = [
-  {
-    id: "1",
-    date: "Aujourd'hui",
-    mood: "😊",
-    content: "Bonne journée, j'ai pris le temps de marcher dehors. Ça m'a fait du bien de déconnecter un peu.",
-  },
-  {
-    id: "2",
-    date: "Hier",
-    mood: "😐",
-    content: "Journée un peu longue au travail. J'ai du mal à lâcher prise le soir.",
-  },
-  {
-    id: "3",
-    date: "Lundi",
-    mood: "😔",
-    content: "Je me suis senti un peu seul aujourd'hui. J'ai appelé un ami, ça m'a aidé.",
-  },
-];
+import {
+  getJournalEntries,
+  createJournalEntry,
+  deleteJournalEntry,
+  formatDate,
+  JournalEntry,
+} from "@/services/journalService";
 
 const moodOptions = ["😊", "😐", "😔", "😰", "😡"];
 
 const JournalPage = () => {
   const navigate = useNavigate();
-  const [entries, setEntries] = useState<JournalEntry[]>(sampleEntries);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [showNew, setShowNew] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [newMood, setNewMood] = useState("😊");
+  const [saving, setSaving] = useState(false);
 
-  const addEntry = () => {
+  useEffect(() => {
+    getJournalEntries().then(setEntries);
+  }, []);
+
+  const addEntry = async () => {
     if (!newContent.trim()) return;
-    const entry: JournalEntry = {
-      id: Date.now().toString(),
-      date: "Aujourd'hui",
-      mood: newMood,
-      content: newContent.trim(),
-    };
-    setEntries([entry, ...entries]);
+    setSaving(true);
+    const created = await createJournalEntry(newMood, newContent.trim());
+    if (created) {
+      setEntries((prev) => [created, ...prev]);
+    }
     setNewContent("");
+    setNewMood("😊");
     setShowNew(false);
+    setSaving(false);
+  };
+
+  const removeEntry = async (id: string) => {
+    setEntries((prev) => prev.filter((e) => e._id !== id));
+    await deleteJournalEntry(id);
   };
 
   return (
@@ -87,9 +76,7 @@ const JournalPage = () => {
           >
             <div className="bg-card rounded-3xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-semibold text-foreground">
-                  Nouvelle entrée
-                </p>
+                <p className="text-sm font-semibold text-foreground">Nouvelle entrée</p>
                 <button onClick={() => setShowNew(false)}>
                   <X size={18} className="text-muted-foreground" />
                 </button>
@@ -120,10 +107,10 @@ const JournalPage = () => {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={addEntry}
-                disabled={!newContent.trim()}
+                disabled={!newContent.trim() || saving}
                 className="w-full mt-3 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-40"
               >
-                Enregistrer
+                {saving ? "Enregistrement..." : "Enregistrer"}
               </motion.button>
             </div>
           </motion.div>
@@ -132,9 +119,14 @@ const JournalPage = () => {
 
       {/* Entries */}
       <div className="px-5 space-y-3">
+        {entries.length === 0 && (
+          <p className="text-center text-sm text-muted-foreground mt-10">
+            Aucune entrée pour l'instant. Commence à écrire ! ✍️
+          </p>
+        )}
         {entries.map((entry, i) => (
           <motion.div
-            key={entry.id}
+            key={entry._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
@@ -142,13 +134,19 @@ const JournalPage = () => {
           >
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-muted-foreground font-medium">
-                {entry.date}
+                {formatDate(entry.createdAt)}
               </span>
-              <span className="text-lg">{entry.mood}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{entry.mood}</span>
+                <button
+                  onClick={() => removeEntry(entry._id)}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-foreground leading-relaxed">
-              {entry.content}
-            </p>
+            <p className="text-sm text-foreground leading-relaxed">{entry.content}</p>
           </motion.div>
         ))}
       </div>
