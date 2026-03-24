@@ -142,7 +142,7 @@ const HomePage = () => {
           >
             <Info size={22} className="text-primary" />
             <span className="text-sm font-semibold text-foreground">
-              caca
+              À propos
             </span>
             <span className="text-xs text-muted-foreground">
               Découvrir MindCare
