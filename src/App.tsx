@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useState, useRef } from "react";
+import SplashScreen from "./components/SplashScreen";
 import OnboardingPage from "./pages/OnboardingPage";
 import HomePage from "./pages/HomePage";
 import ChatPage from "./pages/ChatPage";
@@ -37,6 +39,17 @@ const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
 
 const AppRoutes = () => {
   const { isLoggedIn, isLoading } = useAuth();
+  const [showSplash, setShowSplash] = useState(false);
+  const prevLoggedIn = useRef(isLoggedIn);
+
+  // Affiche le splash uniquement quand on vient de se connecter
+  if (!prevLoggedIn.current && isLoggedIn && !showSplash) {
+    setShowSplash(true);
+    prevLoggedIn.current = true;
+  }
+  if (prevLoggedIn.current && !isLoggedIn) {
+    prevLoggedIn.current = false;
+  }
 
   if (isLoading) {
     return (
@@ -47,6 +60,8 @@ const AppRoutes = () => {
   }
 
   return (
+    <>
+      {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
@@ -62,6 +77,7 @@ const AppRoutes = () => {
       <Route path="/resources" element={<PrivateRoute element={<ResourcesPage />} />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   );
 };
 
