@@ -113,12 +113,6 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
-
-          <div className="mt-4 text-center text-xs text-muted-foreground">
-            <p>Données de test :</p>
-            <p>Email: user@test.com</p>
-            <p>Mot de passe: password123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,8 +1,14 @@
-const API_URL = "http://localhost:5001/api/auth";
+const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5001/api"}/auth`;
 
 interface AuthResponse {
   token: string;
   user: { id: string; name: string; email: string };
+}
+
+async function handleResponse(res: Response): Promise<AuthResponse> {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || "Erreur serveur");
+  return data as AuthResponse;
 }
 
 export async function registerUser(name: string, email: string, password: string): Promise<AuthResponse> {
@@ -11,10 +17,7 @@ export async function registerUser(name: string, email: string, password: string
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, password }),
   });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message);
-
+  const data = await handleResponse(res);
   localStorage.setItem("token", data.token);
   localStorage.setItem("user", JSON.stringify(data.user));
   return data;
@@ -26,10 +29,7 @@ export async function loginUser(email: string, password: string): Promise<AuthRe
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message);
-
+  const data = await handleResponse(res);
   localStorage.setItem("token", data.token);
   localStorage.setItem("user", JSON.stringify(data.user));
   return data;
